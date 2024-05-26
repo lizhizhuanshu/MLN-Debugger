@@ -1,0 +1,122 @@
+{
+  "name": "mln-debugger",
+  "displayName": "mln-debugger",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "activationEvents": [
+    "onDebug"
+  ],
+  "publisher": "lizhizhuanshu",
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration":[
+      {
+        "title": "Net Settings",
+        "properties": {
+          "mln.debugger.port":{
+            "type": "number",
+            "description": "The port of the debugger server",
+            "default": 8173
+          }
+        }
+      },
+      {
+        "title": "MLN Debugger",
+        "properties": {
+          "mln.debugger.sourceDir":{
+            "type": "string",
+            "description": "source code directory",
+            "default": "./src"
+          },
+          "mln.debugger.entryFile":{
+            "type": "string",
+            "description": "entry file",
+            "default": "index.lua"
+          }
+        }
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "mln-debugger",
+        "languages": ["lua"],
+        "label":"MLN Debugger",
+        "program": "./out/debugger.lua",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": ["sourceDir", "port", "entryFile"],
+            "properties": {
+              "sourceDir": {
+                "type": "string",
+                "description": "source code directory"
+              },
+              "entryFile": {
+                "type": "string",
+                "description": "entry file"
+              },
+              "port": {
+                "type": "number",
+                "description": "The port of the debugger server"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "name": "MLN-Launch",
+            "type": "mln-debugger",
+            "request": "launch",
+            "sourceDir": "./src",
+            "entryFile": "index.lua",
+            "port": 8176
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "MLN-Launch",
+            "body": {
+              "type": "mln-debugger",
+              "request": "launch",
+              "name": "MLN-Launch",
+              "sourceDir": "./src",
+              "entryFile": "index.lua",
+              "port": 8176
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.89.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "await-notify": "^1.0.1",
+    "http-parser-js": "^0.5.8",
+    "protobufjs": "^7.3.0",
+    "vscode-debugadapter": "^1.51.0"
+  }
+}
