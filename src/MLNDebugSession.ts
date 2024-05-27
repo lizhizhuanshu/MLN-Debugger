@@ -20,25 +20,23 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	entryFile:string;
 	host?:string;
 	port?:number;
+	sourceDir?:string;
 }
 
 export class MLNDebugSession extends LoggingDebugSession{
 	private builder:MLNDebuggerBuilder;
 	private debugger?:MLNDebugger;
-	private codeProvider:CodeProvider;
+	private codeProvider?:CodeProvider;
 	private _configurationDone = new Subject();
 	public constructor(){
 		super("mln-debug.txt");
-		const sourceRoot = getConfigure<string>("mln.debugger","sourceDir") || "./src"
 		this.builder= new Builder()
-		this.codeProvider = new SimpleCodeProvider(sourceRoot);
 
 		const port = getConfigure<number>("mln.debugger","port") || 8176;
 		const entryFile = getConfigure<string>("mln.debugger","entryFile") || "index.lua";
 
 		this.builder.setPort(port);
 		this.builder.setEntryFile(entryFile);
-		this.builder.setCodeProvider(this.codeProvider);
 		this.builder.onLog((message,path)=>{
 			const e: DebugProtocol.OutputEvent = new OutputEvent(`${message}\n`);
 			if(path){
@@ -121,6 +119,10 @@ export class MLNDebugSession extends LoggingDebugSession{
 		if(args.entryFile){
 			this.builder.setEntryFile(args.entryFile);
 		}
+		const sourceDir = args.sourceDir || getConfigure<string>("mln.debugger","sourceDir") || "src";
+		this.codeProvider = new SimpleCodeProvider(sourceDir);
+		this.builder.setCodeProvider(this.codeProvider);
+
 		this.debugger = this.builder.build();
 		if(this.debugger){
 			this.debugger.start()
