@@ -11,9 +11,9 @@ import { basename } from 'path';
 
 import {getConfigure,hasFile} from "./util";
 
-import { MLNDebuggerBuilder,MLNDebugger, CodeProvider } from './MLNDebugger';
+import { MLNDebuggerBuilder,MLNDebugger, ResourceProvider } from './MLNDebugger';
 import { Builder } from './MLNDebuggerAdapter';
-import { SimpleCodeProvider } from './SimpleCodeProvider';
+import { SimpleResourceProvider } from './SimpleResourceProvider';
 
 
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -26,7 +26,7 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 export class MLNDebugSession extends LoggingDebugSession{
 	private builder:MLNDebuggerBuilder;
 	private debugger?:MLNDebugger;
-	private codeProvider?:CodeProvider;
+	private resourceProvider?:ResourceProvider;
 	private _configurationDone = new Subject();
 	public constructor(){
 		super("mln-debug.txt");
@@ -120,8 +120,8 @@ export class MLNDebugSession extends LoggingDebugSession{
 			this.builder.setEntryFile(args.entryFile);
 		}
 		const sourceDir = args.sourceDir || getConfigure<string>("mln.debugger","sourceDir") || "src";
-		this.codeProvider = new SimpleCodeProvider(sourceDir);
-		this.builder.setCodeProvider(this.codeProvider);
+		this.resourceProvider = new SimpleResourceProvider(sourceDir);
+		this.builder.setCodeProvider(this.resourceProvider);
 
 		this.debugger = this.builder.build();
 		if(this.debugger){

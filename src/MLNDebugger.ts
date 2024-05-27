@@ -1,5 +1,6 @@
-export interface CodeProvider {
+export interface ResourceProvider {
   getCode(path:string):Promise<Uint8Array|undefined>;
+  getResource(path:string):Promise<Uint8Array|undefined>;
   onChanged(listener?:(path:string)=>void):void;
   asRelativePath(path:string):string;
 }
@@ -26,5 +27,5 @@ export interface MLNDebuggerBuilder {
   setEntryFile(entryFile: string): MLNDebuggerBuilder;
   onLog(listener: OnLogListener): MLNDebuggerBuilder;
   onError(listener: OnErrorListener): MLNDebuggerBuilder;
-  setCodeProvider(codeProvider: CodeProvider): MLNDebuggerBuilder;
+  setCodeProvider(codeProvider: ResourceProvider): MLNDebuggerBuilder;
 }

@@ -1,6 +1,6 @@
 
 import {Server, Socket, createServer} from 'net';
-import { CodeProvider, MLNDebugger, MLNDebuggerBuilder, OnErrorListener, OnLogListener } from './MLNDebugger';
+import { ResourceProvider, MLNDebugger, MLNDebuggerBuilder, OnErrorListener, OnLogListener } from './MLNDebugger';
 import { InstructionType } from "./generated/PBBaseCommand"
 import { decodepb_get_code_request } from './generated/PBGetCodeRequest';
 import { encodepb_get_code_response, pb_get_code_response } from './generated/PBGetCodeResponse';
@@ -51,7 +51,7 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
   private server: Server;
   private clients: Socket[] = [];
   private clientContext = new Map<Socket,ClientContext>();
-  private codeProvider: CodeProvider;
+  private codeProvider: ResourceProvider;
 
   private logListener?:OnLogListener;
   private errorListener?:OnErrorListener;
@@ -170,10 +170,14 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
         }
         context.parser[HttpParser.HTTPParser.kOnMessageComplete] = async ()=>{
           if(context.url){
-            let code = await this.codeProvider.getCode(context.url);
-            if(code){
-              socket.write(`HTTP/1.1 200 OK\r\nContent-Length: ${code.byteLength}\r\nContent-Type: application/octet-stream\r\n\r\n`);
-              socket.write(code);
+            let path = context.url
+            if(path && path.startsWith("/")){
+              path = path.substring(1)
+            }
+            let resource = await this.codeProvider.getResource(context.url);
+            if(resource){
+              socket.write(`HTTP/1.1 200 OK\r\nContent-Length: ${resource.byteLength}\r\nContent-Type: application/octet-stream\r\n\r\n`);
+              socket.write(resource);
               return
             }
           }
@@ -208,6 +212,7 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
     let command = {} as pbentryfilecommand;
     command.entryFilePath = `http://${this.address}:${this.port}/${this.entryFile}`;
     command.relativeEntryFilePath = this.entryFile;
+    command.params = `RESOURCE_ROOT_URL=http://${this.address}:${this.port}/`
     let buffer = encodepbentryfilecommand(command);
     this.sendMessage(socket, InstructionType.ENTRY_FILE, buffer);
   }
@@ -247,7 +252,7 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
     this.sendMessage(socket, InstructionType.RELOAD, buffer);
   }
 
-  constructor(port: number, address: string,entryFile:string,codeProvider: CodeProvider) {
+  constructor(port: number, address: string,entryFile:string,codeProvider: ResourceProvider) {
     this.port = port;
     this.address = address;
     this.entryFile = codeProvider.asRelativePath(entryFile);
@@ -336,7 +341,7 @@ export class Builder implements MLNDebuggerBuilder {
   private port?: number;
   private address: string = "";
   private entryFile:string = "index.lua";
-  private codeProvider?: CodeProvider;
+  private codeProvider?: ResourceProvider;
   private logListener?:OnLogListener;
   private errorListener?:OnErrorListener;
 
@@ -385,7 +390,7 @@ export class Builder implements MLNDebuggerBuilder {
     this.errorListener = listener;
     return this;
   }
-  setCodeProvider(codeProvider: CodeProvider): MLNDebuggerBuilder {
+  setCodeProvider(codeProvider: ResourceProvider): MLNDebuggerBuilder {
     this.codeProvider = codeProvider;
     return this;
   }
