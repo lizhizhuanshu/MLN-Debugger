@@ -21,6 +21,7 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	host?:string;
 	port?:number;
 	sourceDir?:string;
+	resourceDir?:string;
 }
 
 export class MLNDebugSession extends LoggingDebugSession{
@@ -119,8 +120,9 @@ export class MLNDebugSession extends LoggingDebugSession{
 		if(args.entryFile){
 			this.builder.setEntryFile(args.entryFile);
 		}
-		const sourceDir = args.sourceDir || getConfigure<string>("mln.debugger","sourceDir") || "src";
-		this.resourceProvider = new SimpleResourceProvider(sourceDir);
+		const sourceDir = args.sourceDir || getConfigure<string>("mln.debugger","sourceDir") || "";
+		const resourceDir = args.resourceDir || getConfigure<string>("mln.debugger","resourceDir") || "";
+		this.resourceProvider = new SimpleResourceProvider(sourceDir,resourceDir);
 		this.builder.setCodeProvider(this.resourceProvider);
 
 		this.debugger = this.builder.build();

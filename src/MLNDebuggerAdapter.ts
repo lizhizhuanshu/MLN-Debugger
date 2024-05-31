@@ -114,6 +114,7 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
           context.buffer = otherBuffer;
           response.code = await  this.codeProvider.getCode(request.path);
           otherBuffer = context.buffer;
+          context.buffer = NULL_BUFFER;
         }
         let responseBuffer = encodepb_get_code_response(response);
         this.sendMessage(socket, InstructionType.GET_CODE_RESPONSE, responseBuffer)
@@ -174,10 +175,15 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
             if(path && path.startsWith("/")){
               path = path.substring(1)
             }
-            let resource = await this.codeProvider.getResource(context.url);
-            if(resource){
-              socket.write(`HTTP/1.1 200 OK\r\nContent-Length: ${resource.byteLength}\r\nContent-Type: application/octet-stream\r\n\r\n`);
-              socket.write(resource);
+            let res :Uint8Array|undefined
+            if(context.url.endsWith(".lua")){
+              res = await this.codeProvider.getCode(context.url)
+            }else{
+              res = await this.codeProvider.getResource(context.url)
+            }
+            if(res){
+              socket.write(`HTTP/1.1 200 OK\r\nContent-Length: ${res.byteLength}\r\nContent-Type: application/octet-stream\r\n\r\n`);
+              socket.write(res);
               return
             }
           }
@@ -212,7 +218,7 @@ class MLNDebuggerAdapterByNet implements MLNDebugger {
     let command = {} as pbentryfilecommand;
     command.entryFilePath = `http://${this.address}:${this.port}/${this.entryFile}`;
     command.relativeEntryFilePath = this.entryFile;
-    command.params = `RESOURCE_ROOT_URL=http://${this.address}:${this.port}/`
+    command.params = `projectRootDir=http://${this.address}:${this.port}/`
     let buffer = encodepbentryfilecommand(command);
     this.sendMessage(socket, InstructionType.ENTRY_FILE, buffer);
   }

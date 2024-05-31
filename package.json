@@ -34,6 +34,11 @@
             "description": "source code directory",
             "default": "./src"
           },
+          "mln.debugger.resourceDir":{
+            "type":"string",
+            "description": "resource directory",
+            "default": "./res"
+          },
           "mln.debugger.entryFile":{
             "type": "string",
             "description": "entry file",
@@ -51,11 +56,15 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": ["sourceDir", "port", "entryFile"],
+            "required": ["sourceDir","resourceDir", "port", "entryFile"],
             "properties": {
               "sourceDir": {
                 "type": "string",
                 "description": "source code directory"
+              },
+              "resourceDir": {
+                "type": "string",
+                "description": "resource directory"
               },
               "entryFile": {
                 "type": "string",
@@ -74,6 +83,7 @@
             "type": "mln-debugger",
             "request": "launch",
             "sourceDir": "./src",
+            "resourceDir": "./res",
             "entryFile": "index.lua",
             "port": 8176
           }
@@ -86,6 +96,7 @@
               "request": "launch",
               "name": "MLN-Launch",
               "sourceDir": "./src",
+              "resourceDir": "./res",
               "entryFile": "index.lua",
               "port": 8176
             }
